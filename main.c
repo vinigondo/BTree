@@ -6,11 +6,17 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "paginas.c"
+
 int main(int argc, char *argv[]) {
 
     if (argc == 3 && strcmp(argv[1], "-c") == 0) {
 
         printf("---> Modo de criacao de arvore ativado ... nome do arquivo = %s\n", argv[2]);
+        int error_log = inicializacao(argv[2]);
+        if(error_log == 1){
+            printf("\nImportacao concluida com sucesso !!!");
+        }
 
     }else if(argc == 3 && strcmp(argv[1], "-p") == 0) {
 

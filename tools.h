@@ -5,10 +5,16 @@
 
 #define DELIM_CH '|'
 #define DELIM_STR "|"
-#define TAM_MAX_REG 64
+#define ORDEM 5
+#define TAM_PAGE 9
+
+struct pagina{
+    int qtdchaves;
+    int chaves[ORDEM-1];
+    int filhos[ORDEM];
+};
 
 int input(char *, int);
-
 
 int input(char * str, int size) {
     int i = 0;    
