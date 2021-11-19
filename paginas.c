@@ -7,8 +7,8 @@
 char * criaStringPagina(struct pagina newPagina, char * stringPagina) {
     char *string[TAM_PAGE*sizeof(int)+TAM_PAGE];
     char valor[sizeof(int)];
-    memset(valor, '\0', sizeof(valor));
-    memset(string, '\0', sizeof(string));
+    memset(valor, 0, sizeof(valor));
+    memset(string, 0, sizeof(string));
 
     int cntChave = 0;
     int cntFilho = 0;
@@ -41,6 +41,8 @@ struct pagina criaStructPagina(char *string) {
             primeiraPagina.chaves[i] = -1;
         }
 
+        primeiraPagina.qtdchaves = 0;
+
         return primeiraPagina;
     }
 
@@ -54,7 +56,7 @@ struct pagina criaStructPagina(char *string) {
 
     token = strtok(stringCopy, DELIM_STR);
     while(token != NULL) {
-        if(cnt%2 == 0) {
+         if(cnt%2 == 0) {
             newPagina.filhos[cntFilho] = atoi(token);
             cntFilho++;
         } else {
@@ -70,17 +72,58 @@ struct pagina criaStructPagina(char *string) {
     return newPagina;
 }
 
-int ordenaVetor(int *vetor, int tamanho) {
-    int aux;
-    for(int i = 0; i < tamanho; i++) {
-        for(int j = 0; j < tamanho; j++) {
-            if(vetor[i] < vetor[j] && vetor[j] != -1 && vetor[i] != -1) {
-                aux = vetor[i];
-                vetor[i] = vetor[j];
-                vetor[j] = aux;
+int insereChavePagina(int chave, int rrn, FILE *chavesBinarios){
+
+    char paginaAtualStr[TAM_PAGE*sizeof(int)+TAM_PAGE];
+    memset(paginaAtualStr, 0, sizeof(paginaAtualStr));
+    fseek(chavesBinarios, rrn, SEEK_SET);
+    fread(paginaAtualStr, 1, TAM_PAGE*sizeof(int)+TAM_PAGE, chavesBinarios);
+    printf("\nPagina atual: %s", paginaAtualStr);
+    struct pagina paginaAtual = criaStructPagina(paginaAtualStr);
+
+    int verificadorDeChaves = 0;
+    while(verificadorDeChaves < paginaAtual.qtdchaves){
+        printf("\nChave %d: %d", verificadorDeChaves, paginaAtual.chaves[verificadorDeChaves]);
+        // printf("\nverificador < qtdchaves");
+        if(chave < paginaAtual.chaves[verificadorDeChaves]){
+            // printf("\nchave < chave: %d", paginaAtual.chaves[verificadorDeChaves]);
+            if(paginaAtual.filhos[verificadorDeChaves] != -1){
+                insereChavePagina(chave, paginaAtual.filhos[verificadorDeChaves], chavesBinarios);
+            } else {
+                // printf("\npagina atual filho == -1");
+                if(paginaAtual.qtdchaves < ORDEM-1){
+                    for(int i = paginaAtual.qtdchaves; i > verificadorDeChaves; i--){
+                        paginaAtual.chaves[i] = paginaAtual.chaves[i-1];
+                        // printf("\nmovendo chave: %d", paginaAtual.chaves[i-1]);
+                        paginaAtual.filhos[i+1] = paginaAtual.filhos[i];
+                        // printf("\nmovendo filho: %d", paginaAtual.chaves[i]);
+                    }
+                    paginaAtual.chaves[verificadorDeChaves] = chave;
+                    paginaAtual.qtdchaves++;
+                    // for(int i = 0; i < ORDEM-1; i++){
+                    //     printf("chave %d: %d", i, paginaAtual.chaves[i]);
+                    // }
+                    char *stringPagina = criaStringPagina(paginaAtual, paginaAtualStr);
+                    printf("\nNova pagina atual: %s", paginaAtualStr);
+                    fseek(chavesBinarios, rrn, SEEK_SET);
+                    fwrite(paginaAtualStr, 1, sizeof(paginaAtualStr), chavesBinarios);
+                    return 0;
+                }else{
+                    printf("vou fazer divisao e promocao");
+                    return 0;
+                }
+            }
+        }else if(verificadorDeChaves == ORDEM-1-1){
+            printf("\ntentando inserir no ultimo filho");
+            if(paginaAtual.filhos[verificadorDeChaves+1] != -1){
+                insereChavePagina(chave, paginaAtual.filhos[verificadorDeChaves+1], chavesBinarios);
+            } else {
+                printf("vou fazer divisao e promocao");
             }
         }
+        verificadorDeChaves++;
     }
+
     return 0;
 }
 
@@ -110,29 +153,14 @@ int insereChave(int chave, FILE *chavesBinarios){
         itoa(posicao, cabecalho, 10);
         fseek(chavesBinarios, 0, SEEK_SET);
         fwrite(cabecalho, 1, sizeof(cabecalho), chavesBinarios);
-        printf("\nArquivo btree.dat criado com sucesso!");
+        printf("\nPagina atual: %s", novaPaginaString);
+
         return 0;
     }
 
-    char paginaAtualStr[TAM_PAGE*sizeof(int)+TAM_PAGE];
-    memset(paginaAtualStr, 0, sizeof(paginaAtualStr));
-    fseek(chavesBinarios, rrnRaiz, SEEK_SET);
-    fread(paginaAtualStr, 1, TAM_PAGE*sizeof(int)+TAM_PAGE, chavesBinarios);
-    struct pagina paginaAtual = criaStructPagina(paginaAtualStr);
+    insereChavePagina(chave, rrnRaiz, chavesBinarios);
 
-
-    if(paginaAtual.qtdchaves < ORDEM-1) {
-        paginaAtual.chaves[paginaAtual.qtdchaves] = chave;
-        paginaAtual.qtdchaves++;
-        ordenaVetor(paginaAtual.chaves, ORDEM-1);
-        
-        memset(paginaAtualStr, 0, sizeof(paginaAtualStr));
-        criaStringPagina(paginaAtual, paginaAtualStr);
-        fseek(chavesBinarios, rrnRaiz, SEEK_SET);
-        fwrite(paginaAtualStr, 1, sizeof(paginaAtualStr), chavesBinarios);
-        printf("\nPagina atual: %s", paginaAtualStr);
-    }
-
+    return 0;
 }
 
 int inicializacao(char* chaves){
