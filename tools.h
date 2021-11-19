@@ -15,6 +15,7 @@ struct pagina{
 };
 
 int input(char *, int);
+int ordenaVetor(int *, int);
 
 int input(char * str, int size) {
     int i = 0;    
@@ -28,6 +29,20 @@ int input(char * str, int size) {
     }    
     str[i] = '\0';    
     return i;
+}
+
+int ordenaVetor(int *vetor, int tamanho) {
+    int aux;
+    for(int i = 0; i < tamanho; i++) {
+        for(int j = 0; j < tamanho; j++) {
+            if(vetor[i] < vetor[j] && vetor[j] != -1 && vetor[i] != -1) {
+                aux = vetor[i];
+                vetor[i] = vetor[j];
+                vetor[j] = aux;
+            }
+        }
+    }
+    return 0;
 }
 
 #endif
