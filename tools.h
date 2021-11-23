@@ -7,6 +7,7 @@
 #define DELIM_STR "|"
 #define ORDEM 5
 #define TAM_PAGE 9
+#define TAM_PAGE_STR 45
 
 struct pagina{
     int qtdchaves;
