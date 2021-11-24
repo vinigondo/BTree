@@ -6,8 +6,8 @@
 
 
 char * criaStringPagina(struct pagina newPagina, char * stringPagina) {
-    char *string[TAM_PAGE*sizeof(int)+TAM_PAGE];
-    char valor[sizeof(int)];
+    char *string[TAM_PAGE_STR];
+    char *valor[sizeof(int)];
     memset(valor, 0, sizeof(valor));
     memset(string, 0, sizeof(string));
 
@@ -27,6 +27,7 @@ char * criaStringPagina(struct pagina newPagina, char * stringPagina) {
         strcat(string, DELIM_STR);
     }
     strcpy(stringPagina, string);
+
     return string;
 }
 
@@ -107,7 +108,50 @@ int insereChave(FILE *chavesBinarios, int *rnnRaiz, int *rrnFilhoD, int *chaveP)
 
                         return 0;
                     }else{
-                        printf("\naqui n tem nada campeão -----------");
+                        char paginaFilhoDirStr[TAM_PAGE*sizeof(int)+TAM_PAGE];
+                        memset(paginaFilhoDirStr, 0, sizeof(paginaFilhoDirStr));
+                        
+                        struct pagina paginaFilhoDir = criaStructPagina("n");
+
+                        int chavesParaDivisao[ORDEM];
+                        for(int i = 0; i < ORDEM; i++) {
+                            chavesParaDivisao[i] = paginaAtual.chaves[i];
+                        }
+                        chavesParaDivisao[ORDEM-1] = *chaveP;
+
+                        ordenaVetor(chavesParaDivisao, ORDEM);
+
+                        for(int i = 0; i < ORDEM; i++) {
+                            if(i < (ORDEM-1)/2) {
+                                paginaAtual.chaves[i] = chavesParaDivisao[i];
+                            }else if(ORDEM%2 == 0 && i == ORDEM/2) {
+                                paginaAtual.chaves[i] = -1;
+                                *chaveP = chavesParaDivisao[i];
+                            }else if(ORDEM%2 != 0 && i == ((ORDEM-1)/2)) {
+                                paginaAtual.chaves[i] = -1;
+                                *chaveP = chavesParaDivisao[i];
+                            } else {
+                                paginaFilhoDir.chaves[i-(ORDEM+2)/2] = chavesParaDivisao[i];
+                                paginaFilhoDir.filhos[i-(ORDEM+2)/2] = paginaAtual.filhos[i];
+                                paginaAtual.chaves[i] = -1;
+                                paginaAtual.filhos[i] = -1;
+                            }
+                        }
+
+                        fseek(chavesBinarios, *rnnRaiz, SEEK_SET);
+                        memset(paginaAtualStr, 0, sizeof(paginaAtualStr));
+                        criaStringPagina(paginaAtual, paginaAtualStr);
+                        fwrite(paginaAtualStr, sizeof(paginaAtualStr), 1, chavesBinarios);
+                        printf("\n1 Nova Pagina Atual: %s", paginaAtualStr);
+
+                        fseek(chavesBinarios, 0, SEEK_END);
+                        *rrnFilhoD = ftell(chavesBinarios);
+                        printf("\nrrnFilhoD: %d", *rrnFilhoD);
+                        memset(paginaFilhoDirStr, 0, sizeof(paginaFilhoDirStr));
+                        criaStringPagina(paginaFilhoDir, paginaFilhoDirStr);
+                        fwrite(paginaFilhoDirStr,  sizeof(paginaFilhoDirStr), 1, chavesBinarios);
+                        printf("\n1 criei pagina %s na posicao: %d - retornando chave %d", paginaFilhoDirStr, *rrnFilhoD, *chaveP);
+
                         return 1;
                     }
                 }
@@ -189,7 +233,50 @@ int insereChave(FILE *chavesBinarios, int *rnnRaiz, int *rrnFilhoD, int *chaveP)
 
                         return 0;
                     }else{
-                        printf("\naqui n tem nada campeão 2 -----------");
+                        char paginaFilhoDirStr[TAM_PAGE*sizeof(int)+TAM_PAGE];
+                        memset(paginaFilhoDirStr, 0, sizeof(paginaFilhoDirStr));
+                        
+                        struct pagina paginaFilhoDir = criaStructPagina("n");
+
+                        int chavesParaDivisao[ORDEM];
+                        for(int i = 0; i < ORDEM; i++) {
+                            chavesParaDivisao[i] = paginaAtual.chaves[i];
+                        }
+                        chavesParaDivisao[ORDEM-1] = *chaveP;
+
+                        ordenaVetor(chavesParaDivisao, ORDEM);
+
+                        for(int i = 0; i < ORDEM; i++) {
+                            if(i < (ORDEM-1)/2) {
+                                paginaAtual.chaves[i] = chavesParaDivisao[i];
+                            }else if(ORDEM%2 == 0 && i == ORDEM/2) {
+                                paginaAtual.chaves[i] = -1;
+                                *chaveP = chavesParaDivisao[i];
+                            }else if(ORDEM%2 != 0 && i == ((ORDEM-1)/2)) {
+                                paginaAtual.chaves[i] = -1;
+                                *chaveP = chavesParaDivisao[i];
+                            } else {
+                                paginaFilhoDir.chaves[i-(ORDEM+2)/2] = chavesParaDivisao[i];
+                                paginaFilhoDir.filhos[i-(ORDEM+2)/2] = paginaAtual.filhos[i];
+                                paginaAtual.chaves[i] = -1;
+                                paginaAtual.filhos[i] = -1;
+                            }
+                        }
+
+                        fseek(chavesBinarios, *rnnRaiz, SEEK_SET);
+                        memset(paginaAtualStr, 0, sizeof(paginaAtualStr));
+                        criaStringPagina(paginaAtual, paginaAtualStr);
+                        fwrite(paginaAtualStr, sizeof(paginaAtualStr), 1, chavesBinarios);
+                        printf("\n1 Nova Pagina Atual: %s", paginaAtualStr);
+
+                        fseek(chavesBinarios, 0, SEEK_END);
+                        *rrnFilhoD = ftell(chavesBinarios);
+                        printf("\nrrnFilhoD: %d", *rrnFilhoD);
+                        memset(paginaFilhoDirStr, 0, sizeof(paginaFilhoDirStr));
+                        criaStringPagina(paginaFilhoDir, paginaFilhoDirStr);
+                        fwrite(paginaFilhoDirStr,  sizeof(paginaFilhoDirStr), 1, chavesBinarios);
+                        printf("\n1 criei pagina %s na posicao: %d - retornando chave %d", paginaFilhoDirStr, *rrnFilhoD, *chaveP);
+
                         return 1;
                     }
                 }
